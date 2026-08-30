@@ -480,40 +480,38 @@
     });
 
     contactForm.addEventListener("submit", function (event) {
-      event.preventDefault();
+  const fieldNames = Object.keys(formFields);
+  const validationResults = fieldNames.map(validateField);
+  const formIsValid = validationResults.every(Boolean);
 
-      const fieldNames = Object.keys(formFields);
-      const validationResults = fieldNames.map(validateField);
-      const formIsValid = validationResults.every(Boolean);
+  if (!formIsValid) {
+    event.preventDefault();
 
-      formStatus.className =
-        "form-status is-visible " +
-        (formIsValid ? "is-success" : "is-error");
+    formStatus.className = "form-status is-visible is-error";
+    formStatus.textContent =
+      "Please correct the highlighted fields before sending.";
 
-      if (!formIsValid) {
-        formStatus.textContent =
-          "Please correct the highlighted fields before continuing.";
+    const firstInvalidField = fieldNames
+      .map(function (fieldName) {
+        return formFields[fieldName];
+      })
+      .find(function (field) {
+        return (
+          field &&
+          field.getAttribute("aria-invalid") === "true"
+        );
+      });
 
-        const firstInvalidField = fieldNames
-          .map(function (fieldName) {
-            return formFields[fieldName];
-          })
-          .find(function (field) {
-            return (
-              field &&
-              field.getAttribute("aria-invalid") === "true"
-            );
-          });
+    if (firstInvalidField) {
+      firstInvalidField.focus();
+    }
 
-        if (firstInvalidField) {
-          firstInvalidField.focus();
-        }
+    return;
+  }
 
-        return;
-      }
-
-      formStatus.textContent =
-        "Your message passed validation. Connect this form to a form service or backend to deliver real enquiries.";
+  formStatus.className = "form-status is-visible is-success";
+  formStatus.textContent = "Sending your message...";
+});
 
       contactForm.reset();
 
